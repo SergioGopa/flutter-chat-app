@@ -1,5 +1,8 @@
+import 'package:chat/helpers/show_alert.dart';
+import 'package:chat/services/auth_service.dart';
 import 'package:chat/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -16,9 +19,15 @@ class LoginPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                LogoWidget(title: 'Messenger',),
+                LogoWidget(
+                  title: 'Messenger',
+                ),
                 _Form(),
-                LabelsWidget(route: 'register', title: 'No tienes Cuenta?', subtitle: 'Crea una ahora',),
+                LabelsWidget(
+                  route: 'register',
+                  title: 'No tienes Cuenta?',
+                  subtitle: 'Crea una ahora',
+                ),
                 Container(
                     margin: const EdgeInsets.only(bottom: 30),
                     child: Text(
@@ -46,6 +55,8 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
     return Container(
       margin: const EdgeInsets.only(top: 40),
       padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -65,11 +76,24 @@ class __FormState extends State<_Form> {
             isPassword: true,
           ),
           BlueBtnWidget(
-            placeholder: 'Login',
-            onpressed: () {
-              print(passCtrl.text);
-              print(emailCtrl.text);
-            },
+            placeholder:
+                authService.authenticating ? 'Authenticating' : 'login',
+            onpressed: authService.authenticating
+                ? null
+                : () async {
+                    final loginOk = await authService.login(
+                        emailCtrl.text.trim(), passCtrl.text.trim());
+                    FocusScope.of(context).unfocus();
+
+                    if (loginOk) {
+                      //TODO: Connect to our socket server
+                      Navigator.pushReplacementNamed(context, 'users');
+                    } else {
+                      //Shoe alert
+                      showAlert(context, 'Login Incorrecto',
+                          'Revise sus credenciales nuevamente');
+                    }
+                  },
           )
         ],
       ),

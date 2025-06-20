@@ -1,5 +1,8 @@
+import 'package:chat/helpers/show_alert.dart';
+import 'package:chat/services/auth_service.dart';
 import 'package:chat/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -16,9 +19,15 @@ class RegisterPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                LogoWidget(title: 'Register',),
+                LogoWidget(
+                  title: 'Register',
+                ),
                 _Form(),
-                LabelsWidget(route: 'login', title: 'Ya tienes cuenta?', subtitle: 'Ingresa aqui',),
+                LabelsWidget(
+                  route: 'login',
+                  title: 'Ya tienes cuenta?',
+                  subtitle: 'Ingresa aqui',
+                ),
                 Container(
                     margin: const EdgeInsets.only(bottom: 30),
                     child: Text(
@@ -47,6 +56,7 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
     return Container(
       margin: const EdgeInsets.only(top: 40),
       padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -72,11 +82,25 @@ class __FormState extends State<_Form> {
             isPassword: true,
           ),
           BlueBtnWidget(
-            placeholder: 'Login',
-            onpressed: () {
-              print(passCtrl.text);
-              print(emailCtrl.text);
-            },
+            placeholder:authService.authenticating?'Authenticating':'Create account',
+            onpressed: authService.authenticating
+                ? null
+                : () async {
+                    final registerOk = await authService.register(
+                        nameCtrl.text.trim(), emailCtrl.text.trim(), passCtrl.text.trim());
+                    
+                    FocusScope.of(context).unfocus();
+
+                    if (registerOk == true) {
+                      Navigator.pushReplacementNamed(context, 'login');
+                    } else {
+                      showAlert(context, 'Registro Incorrecto',
+                          registerOk);
+                    }
+                    print(nameCtrl.text);
+                    print(passCtrl.text);
+                    print(emailCtrl.text);
+                  },
           )
         ],
       ),

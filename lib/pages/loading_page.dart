@@ -1,4 +1,7 @@
+import 'package:chat/pages/pages.dart';
+import 'package:chat/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoadingPage extends StatelessWidget {
   const LoadingPage({super.key});
@@ -6,9 +9,38 @@ class LoadingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text('LoadingPage'),
+      body: FutureBuilder(
+        future: checkLoginState(context),
+        builder: (context, snapshot) {
+          return Center(
+            child: Text('Authenticating, here will go a gif or something'),
+          );
+        },
       ),
     );
+  }
+
+  Future checkLoginState(BuildContext context) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    final authenticated = await authService.isLoggedIn();
+
+    if (authenticated) {
+      //TODO: Connect to the socket server
+      // Navigator.pushReplacementNamed(context, 'users');
+      Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => UsersPage(),
+            transitionDuration: Duration(milliseconds: 0)
+          ));
+    } else {
+      Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => LoginPage(),
+            transitionDuration: Duration(milliseconds: 0)
+          ));
+    }
   }
 }
