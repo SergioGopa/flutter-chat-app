@@ -22,10 +22,10 @@ class AuthService with ChangeNotifier {
   }
 
   //Token getter
-  static Future<String?> getToken() async {
+  static Future<String> getToken() async {
     final _storage = FlutterSecureStorage();
     final token = await _storage.read(key: 'token');
-    return token;
+    return token!;
   }
 
   static Future<void> deleteToken() async {
@@ -45,7 +45,6 @@ class AuthService with ChangeNotifier {
     if (resp.statusCode == 200) {
       final loginRespose = loginResponseFromJson(resp.body);
       user = loginRespose.user;
-      //TODO: Guardar Token en lugar seguro
       await _saveToken(loginRespose.token);
 
       return true;
